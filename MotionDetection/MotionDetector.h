@@ -2,21 +2,8 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <Eigen/Core>
-#include <Eigen/Dense>
-#include <Eigen/Geometry>
-
-
-
 #define DSGM_VAR_INIT (20.0*20.0)
 
-//#define TEST_ORIGINAL_CODE
-
-#ifdef TEST_ORIGINAL_CODE    
-#include "prob_model.h"
-#endif
-
-namespace fyusion {
 
 class MotionDetector{
     
@@ -99,12 +86,6 @@ class MotionDetector{
     
 private:
     
-#ifdef TEST_ORIGINAL_CODE
-    CProbModel* baseline_method;
-    
-    IplImage baseline_image;
-    IplImage baseline_output;
-#endif
     bool model_initialized_;
     bool pre_image_loaded;
     bool motion_compensated_;
@@ -156,4 +137,3 @@ public:
 };
 
 
-}

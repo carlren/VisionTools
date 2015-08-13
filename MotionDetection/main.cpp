@@ -1,21 +1,11 @@
 #include <string>
-
-#include <boost/filesystem/operations.hpp>
-#include <boost/program_options.hpp>
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/variables_map.hpp>
-#include <boost/tokenizer.hpp>
-#include <boost/token_functions.hpp>
-
+#include<stdexcept>
 #include <opencv2/opencv.hpp>
-#include"prob_model.h"
 
 #include"MotionDetector.h"
 
 using namespace cv;
 using namespace std;
-using namespace fyusion;
 
 ////////////////////////////////////////////////////////////////////////////////
 std::vector <cv::Mat3b>
@@ -63,25 +53,18 @@ void RunMotionDetection(std::string& video_name, bool need_rotate){
     int frame_id = 1;
     
     MotionDetector* motion_detector = new MotionDetector(need_rotate);
-    
-//    resize(frames[frame_id], smallFrame, tSize);
-//    motion_detector->updateDualSGM(smallFrame);
-    
+        
     namedWindow("origin",WINDOW_AUTOSIZE|WINDOW_OPENGL);
     namedWindow("motion",WINDOW_AUTOSIZE|WINDOW_OPENGL);
     namedWindow("sgm_mean",WINDOW_AUTOSIZE|WINDOW_OPENGL);
     namedWindow("warped_mean",WINDOW_AUTOSIZE|WINDOW_OPENGL);
     
-//    namedWindow("err_before");
-//    namedWindow("err_after");
     
      moveWindow("origin",100,100);
      moveWindow("motion",100,1000);
      moveWindow("sgm_mean", 500,100);
      moveWindow("warped_mean", 500,300);
      
-//     moveWindow("err_before",500,700);
-//     moveWindow("err_after",500,1000);
      
     while(show_frames){
         
@@ -131,44 +114,15 @@ void RunMotionDetection(std::string& video_name, bool need_rotate){
 
 int main(int argc, char** argv)
 {
-    try {
     
-        boost::program_options::options_description description ("MotionDetector");
-        
-        description.add_options()
-        ("help","Desplay this help message")
-        ("video", boost::program_options::value<std::string>(), "the name of the video")
-        ("need_rotate", "whether the video need to rotated");
-        
-        boost::program_options::variables_map vm;
-        boost::program_options::store(boost::program_options::command_line_parser(argc, argv).options(description).run(), vm);
-        boost::program_options::notify(vm);
-        
-        std::string video_name;
-        bool need_rotate = false;
-        
-        if (vm.count("help")) {
-            std::cerr<<description<<std::endl;
-        }
-        if(vm.count("need_rotate")){
-            need_rotate = true;
-        }
-        
-        if (vm.count("video")) {
-            video_name = vm["video"].as<std::string>();
-            std::cerr<<"processing single video from:" << video_name << std::endl;
-            
-            RunMotionDetection(video_name,need_rotate);
-        }
-        else
-        {
-            std::cerr<<description<<std::endl;
-        }
-        
-    } catch (std::exception& e) {
-        std::cerr<<e.what()<<std::endl;
-        return EXIT_FAILURE;
+    if (argc!=2) {
+        cerr<<"Useage: ./MotionDetection <input video name>"<<endl;
+        return -1;
     }
-    
-    return EXIT_SUCCESS;
+    else
+    {
+        string video_name = argv[1];
+        RunMotionDetection(video_name,false);
+        return 0;
+    }
 }

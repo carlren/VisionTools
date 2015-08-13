@@ -3,9 +3,7 @@
 #include<math.h>
 
 using namespace  std;
-using namespace Eigen;
 using namespace cv;
-using namespace fyusion;
 
 
 MotionDetector::~MotionDetector(){}
@@ -46,10 +44,6 @@ MotionDetector::MotionDetector(bool need_rotate){
     
     small_motion_mask_.create(target_size_,CV_8UC1);
 
-#ifdef TEST_ORIGINAL_CODE    
-    baseline_method = new CProbModel();
-    baseline_output = small_motion_mask_;
-#endif
 }
 
 // done
@@ -563,32 +557,18 @@ void MotionDetector::updateDualSGM(const Mat &in_img, const DualSGM *in_dsgm, Du
     
 }
 
-
+#define SHOW_DSGM_MODEL
 void MotionDetector::updateBackgroundModel(const Mat &in_img, const Hom3x3 pose, Mat* out_motion_mask)
 {
     // preprocess image by smoothing
     prepareData(in_img);
     Matx33f warp = computeBackgroundMotion(pre_small_gray_image_,cur_small_gray_image_); 
-//    warpPerspective(small_blur_image_,small_blur_image_,warp,target_size_, INTER_LINEAR | WARP_INVERSE_MAP);
     compensateMotion(background_models_, warped_background_models_,warp.inv());
     updateDualSGM(small_blur_image_,warped_background_models_,background_models_, out_motion_mask);
     
-#ifdef TEST_ORIGINAL_CODE
-    Matx33f inv_warp = warp.inv();
-    double h[9];
-    for (int i=0;i<9;i++) 
-    {
-        h[i] = inv_warp.val[i];
-    }
-    
-    baseline_method->m_Cur = &baseline_image;
-    baseline_method->motionCompensate(h);
-    baseline_method->update(&baseline_output);
-    
-    cvShowImage("baseline",&baseline_output);
-#endif
     cur_small_gray_image_.copyTo(pre_small_gray_image_);
     
+#ifdef SHOW_DSGM_MODEL    
 //// debug   gaussian means
     Mat sgm_image(grid_layout_,CV_8UC3);
     for (int r=0, count = 0;r<grid_layout_.height;r++){
@@ -599,8 +579,6 @@ void MotionDetector::updateBackgroundModel(const Mat &in_img, const Hom3x3 pose,
         }
     }
     imshow("sgm_mean", sgm_image);
-
-//    imwrite("/Users/carlren/Data/var.png",sgm_image);
     
     Mat sgm_warp_image(grid_layout_,CV_8UC3);
     for (int r=0, count = 0;r<grid_layout_.height;r++){
@@ -611,9 +589,8 @@ void MotionDetector::updateBackgroundModel(const Mat &in_img, const Hom3x3 pose,
         }
     }
     imshow("warped_mean", sgm_warp_image);
+#endif
     
-//    imwrite("/Users/carlren/Data/warped_var.png",sgm_warp_image);
-
 }
 
 
@@ -629,7 +606,6 @@ void MotionDetector::detectMotion(const Mat &in_img, Mat &out_motion_mask, Hom3x
         for (int c=0;c<grid_layout_.width;c++,idx++){
         
             const SGM& current_sgm = background_models_[idx].currentModel();
-//            const SGM& current_sgm = warped_background_models_[idx].currentModel();
             
             const int y_base = r * patch_size_.height;
             const int x_base = c * patch_size_.width;
@@ -641,13 +617,10 @@ void MotionDetector::detectMotion(const Mat &in_img, Mat &out_motion_mask, Hom3x
                     if (!current_sgm.classify(val,sigma_classify_))
                         out_motion_mask.at<Vec3b>(y_base+i,x_base+j) = Vec3b(0,0,255);
                     
-//                    small_motion_mask_.at<uchar>(y_base+i,x_base+j) = (!current_sgm.classify(val,sigma_classify_)) * 255;      
                 }
             }
             
         }
     }
     
-//    resize(small_motion_mask,out_motion_mask,Size(out_motion_mask.cols,out_motion_mask.rows),INTER_NEAREST);
-//     resize(small_motion_mask_,out_motion_mask,target_size_,INTER_NEAREST);
 }
