@@ -124,6 +124,8 @@ void MultiHomographyStitch::computeHomographyLayersRANSAC()
             inlier_list_.push_back(inliers);
             homography_list_.push_back(H);
             
+            cout<<H<<endl<<endl;
+            
             pt_left_ref.clear();
             pt_left_cur.clear();
             
@@ -193,8 +195,11 @@ void MultiHomographyStitch::assgnLayerLable(){
         absdiff(stitch_image,cur_img_,diff_frame);
         imshow("diff_new",diff_frame);
         
-        absdiff(warped_imges[0],cur_img_,diff_frame);
+        absdiff(ref_img_,cur_img_,diff_frame);
         imshow("diff_old",diff_frame);
+        
+        absdiff(warped_imges[0],cur_img_,diff_frame);
+        imshow("diff_warp",diff_frame);
     
 }
 
@@ -219,7 +224,6 @@ void MultiHomographyStitch::visualizeMultipleHomography()
             
         }
     }
-    
     
     imshow("from",ref_show);
     imshow("to",cur_show);

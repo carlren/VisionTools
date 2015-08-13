@@ -53,11 +53,12 @@ int main(int argc, char** argv)
 //    Mat img1 = imread(img_name1);
 //    Mat img2 = imread(img_name2);
     
-    string video_name = "/Users/carlren/Code/VisionTools/MultiHomographyStitch/data/table.mov";
+//    string video_name = "/Users/carlren/Code/VisionTools/MultiHomographyStitch/data/table.mov";
+    string video_name = "/Users/carlren/Data/in/car5/fyuse_raw.mp4";
     vector<Mat3b> frames = loadVideo(video_name);
 
     Mat& img1 = frames[0];
-    Mat& img2 = frames[15];
+    Mat& img2 = frames[10];
     
     
     MultiHomographyStitch my_stitch;
