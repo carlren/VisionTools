@@ -47,13 +47,13 @@ loadVideo (const std::string& input_filename, bool need_rotate=false)
 
 int main(int argc, char** argv)
 {
-//    string img_name1 = "/home/carl/Work/Code/github/VisionTools/MultiHomographyStitch/data/desk5.jpg";
-//    string img_name2 = "/home/carl/Work/Code/github/VisionTools/MultiHomographyStitch/data/desk4.jpg";
+//    string img_name1 = "/Users/carlren/Code/VisionTools/MultiHomographyStitch/data/desk5.jpg";
+//    string img_name2 = "/Users/carlren/Code/VisionTools/MultiHomographyStitch/data/desk4.jpg";
 
-//    Mat img1 = imread(img_name1,CV_LOAD_IMAGE_GRAYSCALE);
-//    Mat img2 = imread(img_name2,CV_LOAD_IMAGE_GRAYSCALE);
+//    Mat img1 = imread(img_name1);
+//    Mat img2 = imread(img_name2);
     
-    string video_name = "/home/carl/Work/Code/github/VisionTools/MultiHomographyStitch/data/table.mov";
+    string video_name = "/Users/carlren/Code/VisionTools/MultiHomographyStitch/data/table.mov";
     vector<Mat3b> frames = loadVideo(video_name);
 
     Mat& img1 = frames[0];

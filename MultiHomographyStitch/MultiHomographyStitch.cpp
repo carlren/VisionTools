@@ -36,7 +36,7 @@ void MultiHomographyStitch::computeHomographyLayersRANSAC()
     const double k = 0.04;
     
     // settings for RANSAC
-    const int RASAC_threshold =1;
+    const int RASAC_threshold =3;
     const int MAX_no_layers = 5;
     
     inlier_list_.clear();
@@ -70,7 +70,7 @@ void MultiHomographyStitch::computeHomographyLayersRANSAC()
                     Size(40,40),
                     5);
 
-        // get rid of out bad matches
+        // get rid of  bad matches
         for(size_t i=0; i < point_status.size(); i++) {
             if(point_status[i]) {
                 keypoint_ref_.push_back(pre_points[i]);
@@ -92,39 +92,45 @@ void MultiHomographyStitch::computeHomographyLayersRANSAC()
         
         for (int i=0;i<MAX_no_layers;i++){
         
-        if (corres_list.size()<10) break;
+            if (pt_left_ref.size()<10) break;
+     
+            Matx33f H = cv::findHomography(
+                        pt_left_ref,
+                        pt_left_cur, 
+                        CV_RANSAC,
+                        RASAC_threshold );
             
-        Matx33f H = cv::findHomography(
-                    pt_left_ref,
-                    pt_left_cur, 
-                    CV_RANSAC,
-                    RASAC_threshold );
-        
-         vector<int> inlier;
-         
-        for (int j=0;j<pt_left_ref.size();j++){
-            const Point2f& from = pt_left_ref[j];
-            const Point2f& to = pt_left_cur[j];
-            
-            const float rx = from.x * H(0,0) + from.y * H(0,1) +H(0,2);
-            const float ry = from.x * H(1,0) + from.y * H(1,1) +H(1,2);
-            const float rz = from.x * H(2,0) + from.y * H(2,1) +H(2,2);
-            
-            const float dx = rx / rz - to.x;
-            const float dy = ry / rz - to.y;
-            const float sqr_error = dx * dx + dy * dy;
-            
-            if (sqr_error<RASAC_threshold*RASAC_threshold){
-                inlier.push_back(corres_list[j]);
+            vector<int> inliers;
+            vector<int> outliers;
+             
+            for (int j=0;j<pt_left_ref.size();j++){
+                const Point2f& from = pt_left_ref[j];
+                const Point2f& to = pt_left_cur[j];
                 
-                corres_list.erase(corres_list.begin() + j);
-                pt_left_ref.erase(pt_left_ref.begin() + j);
-                pt_left_cur.erase(pt_left_cur.begin() + j);
+                const float rx = from.x * H(0,0) + from.y * H(0,1) +H(0,2);
+                const float ry = from.x * H(1,0) + from.y * H(1,1) +H(1,2);
+                const float rz = from.x * H(2,0) + from.y * H(2,1) +H(2,2);
+                
+                const float dx = rx / rz - to.x;
+                const float dy = ry / rz - to.y;
+                const float sqr_error = dx * dx + dy * dy;
+                
+                if (sqr_error<RASAC_threshold)
+                    inliers.push_back(corres_list[j]);
+                else
+                    outliers.push_back(corres_list[j]);
             }
-        }
-        
-        inlier_list_.push_back(inlier);
-        homography_list_.push_back(H);
+            
+            inlier_list_.push_back(inliers);
+            homography_list_.push_back(H);
+            
+            pt_left_ref.clear();
+            pt_left_cur.clear();
+            
+            for(int j=0;j<outliers.size();j++){
+                pt_left_cur.push_back(keypoint_cur_[outliers[j]]);
+                pt_left_ref.push_back(keypoint_ref_[outliers[j]]);
+            } 
         }
     }
     
@@ -187,7 +193,7 @@ void MultiHomographyStitch::assgnLayerLable(){
         absdiff(stitch_image,cur_img_,diff_frame);
         imshow("diff_new",diff_frame);
         
-        absdiff(ref_img_,cur_img_,diff_frame);
+        absdiff(warped_imges[0],cur_img_,diff_frame);
         imshow("diff_old",diff_frame);
     
 }
@@ -233,7 +239,7 @@ void MultiHomographyStitch::processImagePair(const Mat &in_img_ref, const Mat &i
     
     computeHomographyLayersRANSAC();
     
-    assgnLayerLable();
+   assgnLayerLable();
     
     visualizeMultipleHomography();
     waitKey(0);
