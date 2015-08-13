@@ -185,10 +185,10 @@ void MultiHomographyStitch::assgnLayerLable(){
     
         Mat diff_frame;
         absdiff(stitch_image,cur_img_,diff_frame);
-        imshow("diff",diff_frame);
+        imshow("diff_new",diff_frame);
         
         absdiff(ref_img_,cur_img_,diff_frame);
-        imshow("diff",diff_frame);
+        imshow("diff_old",diff_frame);
     
 }
 
